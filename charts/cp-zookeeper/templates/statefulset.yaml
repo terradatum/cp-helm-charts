@@ -63,7 +63,6 @@ spec:
         command:
         - java
         - -XX:+UnlockExperimentalVMOptions
-        - -XX:+UseCGroupMemoryLimitForHeap
         - -XX:MaxRAMFraction=1
         - -XshowSettings:vm
         - -jar
