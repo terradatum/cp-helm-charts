@@ -32,28 +32,6 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{/*
-Create a default fully qualified kafka headless name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-*/}}
-{{- define "cp-kafka-rest.cp-kafka-headless.fullname" -}}
-{{- $name := "cp-kafka-headless" -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{/*
-Form the Kafka URL. If Kafka is installed as part of this chart, use k8s service discovery,
-else use user-provided URL
-*/}}
-{{- define "cp-kafka-rest.cp-kafka.boostrap-servers" -}}
-{{- if (index .Values "kafka" "bootstrap-servers") -}}
-{{- printf "%s" (index .Values "kafka" "bootstrap-servers") }}
-{{- else -}}
-{{- printf "PLAINTEXT://%s:9092" (include "cp-kafka-rest.cp-kafka-headless.fullname" .) -}}
-{{- end -}}
-{{- end -}}
-
-
-{{/*
 Create a default fully qualified schema registry name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
