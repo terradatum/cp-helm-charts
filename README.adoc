@@ -29,11 +29,11 @@ The https://github.com/confluentinc/cp-helm-charts[Confluent Platform Helm Chart
 ----
 helm repo add confluentinc https://confluentinc.github.io/cp-helm-charts/   #<1>
 helm repo update    #<2>
-helm install confluentinc/cp-helm-charts --name my-confluent --version 0.6.0    #<3>
+helm install confluentinc/cp-helm-charts --name my-confluent --version 0.6.1-1    #<3>
 ----
 <1> Add `confluentinc` helm charts repo
 <2> Update repo information 
-<3> Install Confluent Platform with release name «my-confluent» and version `0.6.0` 
+<3> Install Confluent Platform with release name «my-confluent» and version `0.6.0-1`
 
 == Contributing
 
@@ -53,13 +53,11 @@ Charts are a collection of YAML templates that describe a related set of Kuberne
 This repository provides Helm charts for the following Confluent
 Platform services:
 
-* ZooKeeper
 * Kafka brokers
 * Kafka Connect
 * Confluent Schema Registry
 * Confluent REST Proxy
 * ksqlDB
-* Confluent Control Center
 
 === Environment Preparation
 
@@ -103,34 +101,6 @@ kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"templat
 helm init --service-account tiller --upgrade
 ----
 
-=== Persistence
-
-The ZooKeeper and Kafka cluster deployed with `StatefulSets` that have a `volumeClaimTemplate` which provides the persistent volume for each replica.
-You can define the size of the volumes by changing `dataDirSize` and `dataLogDirSize` under `cp-zookeeper` and `size` under `cp-kafka` in https://github.com/confluentinc/cp-helm-charts/blob/master/values.yaml[values.yaml].
-
-You also could use the cloud provider's volumes by specifying https://kubernetes.io/docs/concepts/storage/storage-classes/[StorageClass].
-For example, if you are on AWS your storage class will look like this:
-
-[source,yaml]
-----
-apiVersion: storage.k8s.io/v1beta1
-kind: StorageClass
-metadata:
-  name: ssd
-provisioner: kubernetes.io/aws-ebs
-parameters:
-  type: gp2
-----
-
-NOTE: To adapt this example to your needs, read the Kubernetes https://kubernetes.io/docs/concepts/storage/storage-classes/#parameters[StorageClass] documentation.
-
-The `StorageClass` that was created can be specified in `dataLogDirStorageClass` and `dataDirStorageClass` under `cp-zookeeper` and in `storageClass+` under `cp-kafka` in https://github.com/confluentinc/cp-helm-charts/blob/master/values.yaml[values.yaml].
-
-To deploy non-persistent Kafka and ZooKeeper clusters, you must change  the value of `persistence.enabled` under `cp-kafka` and `cp-zookeeper` in https://github.com/confluentinc/cp-helm-charts/blob/master/values.yaml[values.yaml]
-
-WARNING: These type of clusters are suitable for *strictly* development and testing  purposes.
-The `StatefulSets+` are going to use `emptyDir` volumes, this means that its content strictly related to the pod life cycle and is deleted when the pod goes down.
-
 === Install Confluent Platform Charts
 
 Clone the Confluent Helm Chart repo
@@ -148,7 +118,7 @@ Hang tight while we grab the latest from your chart repositories...
 Update Complete. ⎈ Happy Helming!⎈
 ----
 
-Install a 3 node Zookeeper ensemble, a Kafka cluster of 3 brokers, 1 Confluent  Schema Registry instance, 1 REST Proxy instance, and 1 Kafka Connect worker, 1 ksqlDB server in your Kubernetes environment.
+1 Confluent  Schema Registry instance, 1 REST Proxy instance, and 1 Kafka Connect worker, 1 ksqlDB server in your Kubernetes environment.
 
 NOTE: Naming the chart `--name my-confluent-oss` is optional, but we assume this is the name in the remainder of the documentation.
 Otherwise, helm will generate release name.
@@ -223,21 +193,6 @@ Press kbd:[Ctrl + C] to stop consuming.
 
 ==== Manual Test
 
-===== Zookeepers
-
-----
-git clone https://github.com/confluentinc/cp-helm-charts.git        #<1>
-kubectl apply -f cp-helm-charts/examples/zookeeper-client.yaml      #<2>
-...
-kubectl exec -it zookeeper-client -- /bin/bash zookeeper-shell <zookeeper service>:<port> ls /brokers/ids       #<3>
-kubectl exec -it zookeeper-client -- /bin/bash zookeeper-shell <zookeeper service>:<port> get /brokers/ids/0
-kubectl exec -it zookeeper-client -- /bin/bash zookeeper-shell <zookeeper service>:<port> ls /brokers/topics    #<4>
-----
-<1> Clone Helm Chars git repository
-<2> Deploy a client pod.
-<3> Connect to the client pod and use the `+zookeeper-shell+` command to  explore brokers...
-<4> topics, etc.
-
 ===== Kafka
 
 [source,bash]
@@ -254,11 +209,10 @@ kubectl exec -it kafka-client -- /bin/bash      #<2>
 ----
 ## Setup
 export RELEASE_NAME=<release name>
-export ZOOKEEPERS=${RELEASE_NAME}-cp-zookeeper:2181
 export KAFKAS=${RELEASE_NAME}-cp-kafka-headless:9092
 
 ## Create Topic
-kafka-topics --zookeeper $ZOOKEEPERS --create --topic test-rep-one --partitions 6 --replication-factor 1
+kafka-topics --create --topic test-rep-one --partitions 6 --replication-factor 1
 
 ## Producer
 kafka-run-class org.apache.kafka.tools.ProducerPerformance --print-metrics --topic test-rep-one --num-records 6000000 --throughput 100000 --record-size 100 --producer-props bootstrap.servers=$KAFKAS buffer.memory=67108864 batch.size=8196
@@ -273,29 +227,6 @@ ksqlDB is the streaming SQL engine that enables real-time data  processing again
 Now that you have running in your Kubernetes cluster, you may run a https://github.com/confluentinc/cp-helm-charts/blob/master/examples/ksql-demo.yaml[ksqlDB example].
 
 === Operations
-
-==== Scaling Zookeeper
-
-TIP: All scaling operations should be done offline with no producer or  consumer connection.
-The number of nodes should always be odd number.
-
-Install cp-helm-charts with default 3 node ensemble
-
-----
-helm install cp-helm-charts
-----
-
-Scale nodes up to 5, change `servers` under `cp-zookeeper` to 5 in `values.yaml`
-
-----
-helm upgrade <release name> cp-helm-charts
-----
-
-Scale nodes down to 3, change `servers` under `cp-zookeeper` to 3 in `values.yaml`
-
-----
-helm upgrade <release name> cp-helm-charts
-----
 
 ==== Scaling Kafka
 
@@ -335,7 +266,6 @@ helm install stable/grafana
 
 . Add Prometheus as Data Source in Grafana, url should be something  like: `+http://illmannered-marmot-prometheus-server:9090+`
 . Import dashboard under https://github.com/confluentinc/cp-helm-charts/blob/master/grafana-dashboard/confluent-open-source-grafana-dashboard.json[grafana-dashboard] into Grafana image:screenshots/kafka.png[Kafka Dashboard]
-image:screenshots/zookeeper.png[ZooKeeper Dashboard]
 
 === Teardown
 
@@ -355,8 +285,6 @@ Finally, clean up all persisted volume claims (pvc) created by  this release.
 ----
 helm list
 helm delete <release name>
-kubectl delete statefulset <release name>-cp-kafka <release name>-cp-zookeeper
-kubectl delete pvc --selector=release=<release name>
 ----
 
 == Appendix: Create a Local Kubernetes Cluster
@@ -451,7 +379,6 @@ KubeDNS is running at https://192.168.99.106:8443/api/v1/namespaces/kube-system/
 Huge thanks to:
 
 * https://github.com/kubernetes/charts/tree/master/incubator/kafka[Kafka helm chart]
-* https://github.com/kubernetes/charts/tree/master/incubator/zookeeper[ZooKeeper helm chart]
 * https://github.com/kubernetes/charts/tree/master/incubator/schema-registry[Schema Registry helm chart]
 * https://github.com/Yolean/kubernetes-kafka[kubernetes-kafka]
 * https://github.com/solsson/dockerfiles[docker-kafka]

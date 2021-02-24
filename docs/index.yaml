@@ -3,7 +3,59 @@ entries:
   cp-helm-charts:
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2021-02-18T14:29:09.465751953-08:00"
+    created: "2021-02-24T10:08:06.620507629-08:00"
+    dependencies:
+    - condition: cp-schema-registry.enabled
+      name: cp-schema-registry
+      repository: file://./charts/cp-schema-registry
+      version: 0.1.0
+    - condition: cp-kafka-rest.enabled
+      name: cp-kafka-rest
+      repository: file://./charts/cp-kafka-rest
+      version: 0.1.0
+    - condition: cp-kafka-connect.enabled
+      name: cp-kafka-connect
+      repository: file://./charts/cp-kafka-connect
+      version: 0.1.0
+    - condition: cp-ksql-server.enabled
+      name: cp-ksql-server
+      repository: file://./charts/cp-ksql-server
+      version: 0.1.0
+    description: A Helm chart for Confluent Platform Community Edition
+    digest: 82dcdac2fee21f947877ee8759f92b475e036a47f3db52fb900c1fee649b1523
+    name: cp-helm-charts
+    urls:
+    - cp-helm-charts-0.6.1-1.tgz
+    version: 0.6.1-1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-02-24T10:08:06.642771143-08:00"
+    dependencies:
+    - condition: cp-schema-registry.enabled
+      name: cp-schema-registry
+      repository: file://./charts/cp-schema-registry
+      version: 0.1.0
+    - condition: cp-kafka-rest.enabled
+      name: cp-kafka-rest
+      repository: file://./charts/cp-kafka-rest
+      version: 0.1.0
+    - condition: cp-kafka-connect.enabled
+      name: cp-kafka-connect
+      repository: file://./charts/cp-kafka-connect
+      version: 0.1.0
+    - condition: cp-ksql-server.enabled
+      name: cp-ksql-server
+      repository: file://./charts/cp-ksql-server
+      version: 0.1.0
+    description: A Helm chart for Confluent Platform Community Edition
+    digest: 284523144355cad60e5c984a1dc9404cdc7b4f82a5dcdad76f20d1f10f5f5814
+    name: cp-helm-charts
+    urls:
+    - docs/cp-helm-charts-0.6.1-1.tgz
+    version: 0.6.1-1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-02-24T10:08:06.641069318-08:00"
     dependencies:
     - condition: cp-kafka.enabled
       name: cp-kafka
@@ -41,7 +93,7 @@ entries:
     version: 0.6.0
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2021-02-18T14:29:09.448249288-08:00"
+    created: "2021-02-24T10:08:06.637803154-08:00"
     dependencies:
     - condition: cp-kafka.enabled
       name: cp-kafka
@@ -75,11 +127,11 @@ entries:
     digest: dc082894020379df3afae45041e6631039ff3de652c6547c7ba30d4eff25ed2c
     name: cp-helm-charts
     urls:
-    - cp-helm-charts-0.6.0-1.tgz
+    - docs/cp-helm-charts-0.6.0-1.tgz
     version: 0.6.0-1
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2021-02-18T14:29:09.462917753-08:00"
+    created: "2021-02-24T10:08:06.634954849-08:00"
     dependencies:
     - condition: cp-kafka.enabled
       name: cp-kafka
@@ -117,7 +169,7 @@ entries:
     version: 0.5.0
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2021-02-18T14:29:09.459681503-08:00"
+    created: "2021-02-24T10:08:06.631757394-08:00"
     dependencies:
     - condition: cp-kafka.enabled
       name: cp-kafka
@@ -155,7 +207,7 @@ entries:
     version: 0.5.0-1
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2021-02-18T14:29:09.456957888-08:00"
+    created: "2021-02-24T10:08:06.629060818-08:00"
     dependencies:
     - condition: cp-kafka.enabled
       name: cp-kafka
@@ -193,7 +245,7 @@ entries:
     version: 0.4.1
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2021-02-18T14:29:09.454143712-08:00"
+    created: "2021-02-24T10:08:06.626314945-08:00"
     dependencies:
     - condition: cp-kafka.enabled
       name: cp-kafka
@@ -231,7 +283,7 @@ entries:
     version: 0.4.0
   - apiVersion: v1
     appVersion: "1.0"
-    created: "2021-02-18T14:29:09.450706504-08:00"
+    created: "2021-02-24T10:08:06.623008076-08:00"
     dependencies:
     - condition: cp-kafka.enabled
       name: cp-kafka
@@ -263,4 +315,4 @@ entries:
     urls:
     - docs/cp-helm-charts-0.1.0.tgz
     version: 0.1.0
-generated: "2021-02-18T14:29:09.444653582-08:00"
+generated: "2021-02-24T10:08:06.618256987-08:00"

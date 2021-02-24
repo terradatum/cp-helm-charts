@@ -173,13 +173,6 @@ The configuration parameters in this section control the resources requested and
 
 ## Dependencies
 
-### Zookeeper
-
-| Parameter | Description | Default |
-| --------- | ----------- | ------- |
-| `cp-zookeeper.url` | Service name of Zookeeper cluster (Not needed if this is installed along with cp-kafka chart). | `""` |
-| `cp-zookeeper.clientPort` | Port of Zookeeper Cluster | `2181` |
-
 ### Schema Registry (optional)
 
 | Parameter | Description | Default |

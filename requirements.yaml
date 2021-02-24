@@ -1,12 +1,4 @@
 dependencies:
-- name: cp-kafka
-  version: 0.1.0
-  repository: file://./charts/cp-kafka
-  condition: cp-kafka.enabled
-- name: cp-zookeeper
-  version: 0.1.0
-  repository: file://./charts/cp-zookeeper
-  condition: cp-zookeeper.enabled
 - name: cp-schema-registry
   version: 0.1.0
   repository: file://./charts/cp-schema-registry
@@ -23,7 +15,3 @@ dependencies:
   version: 0.1.0
   repository: file://./charts/cp-ksql-server
   condition: cp-ksql-server.enabled
-- name: cp-control-center
-  version: 0.1.0
-  repository: file://./charts/cp-control-center
-  condition: cp-control-center.enabled
