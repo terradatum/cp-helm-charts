@@ -1,8 +1,4 @@
-{{- if .Capabilities.APIVersions.Has "apps/v1" }}
 apiVersion: apps/v1
-{{- else }}
-apiVersion: apps/v1beta2
-{{- end }}
 kind: Deployment
 metadata:
   name: {{ template "cp-kafka-connect.fullname" . }}
@@ -22,39 +18,14 @@ spec:
       labels:
         app: {{ template "cp-kafka-connect.name" . }}
         release: {{ .Release.Name }}
-      {{- if or .Values.podAnnotations .Values.prometheus.jmx.enabled }}
+      {{- if or .Values.podAnnotations }}
       annotations:
       {{- range $key, $value := .Values.podAnnotations }}
         {{ $key }}: {{ $value | quote }}
       {{- end }}
-      {{- if .Values.prometheus.jmx.enabled }}
-        prometheus.io/scrape: "true"
-        prometheus.io/port: {{ .Values.prometheus.jmx.port | quote }}
-      {{- end }}
       {{- end }}
     spec:
       containers:
-        {{- if .Values.prometheus.jmx.enabled }}
-        - name: prometheus-jmx-exporter
-          image: "{{ .Values.prometheus.jmx.image }}:{{ .Values.prometheus.jmx.imageTag }}"
-          imagePullPolicy: "{{ .Values.prometheus.jmx.imagePullPolicy }}"
-          command:
-          - java
-          - -XX:+UnlockExperimentalVMOptions
-          - -XX:MaxRAMFraction=1
-          - -XshowSettings:vm
-          - -jar
-          - jmx_prometheus_httpserver.jar
-          - {{ .Values.prometheus.jmx.port | quote }}
-          - /etc/jmx-kafka-connect/jmx-kafka-connect-prometheus.yml
-          ports:
-          - containerPort: {{ .Values.prometheus.jmx.port }}
-          resources:
-{{ toYaml .Values.prometheus.jmx.resources | indent 12 }}
-          volumeMounts:
-          - name: jmx-config
-            mountPath: /etc/jmx-kafka-connect
-        {{- end }}
         - name: {{ template "cp-kafka-connect.name" . }}-server
           image: "{{ .Values.image }}:{{ .Values.imageTag }}"
           imagePullPolicy: "{{ .Values.imagePullPolicy }}"
@@ -62,7 +33,7 @@ spec:
             - name: kafka-connect
               containerPort: {{ .Values.servicePort}}
               protocol: TCP
-            {{- if .Values.prometheus.jmx.enabled }}
+            {{- if .Values.jmx }}
             - containerPort: {{ .Values.jmx.port }}
               name: jmx
             {{- end }}
@@ -126,11 +97,6 @@ spec:
       {{- if .Values.volumes }}
 {{ toYaml .Values.volumes | trim | indent 6 }}
       {{- end}}
-      {{- if .Values.prometheus.jmx.enabled }}
-      - name: jmx-config
-        configMap:
-          name: {{ template "cp-kafka-connect.fullname" . }}-jmx-configmap
-      {{- end }}
       {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}

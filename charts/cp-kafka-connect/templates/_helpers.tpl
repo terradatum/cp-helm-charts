@@ -32,24 +32,10 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{/*
-Create a default fully qualified kafka headless name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-*/}}
-{{- define "cp-kafka-connect.cp-kafka-headless.fullname" -}}
-{{- $name := "cp-kafka-headless" -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{/*
-Form the Kafka URL. If Kafka is installed as part of this chart, use k8s service discovery,
-else use user-provided URL
+Kafka Bootstrap Servers
 */}}
 {{- define "cp-kafka-connect.kafka.bootstrapServers" -}}
-{{- if .Values.kafka.bootstrapServers -}}
-{{- .Values.kafka.bootstrapServers -}}
-{{- else -}}
-{{- printf "PLAINTEXT://%s:9092" (include "cp-kafka-connect.cp-kafka-headless.fullname" .) -}}
-{{- end -}}
+{{- default printf "%s" (index .Values "cp-kafka" "bootstrapServers") -}}
 {{- end -}}
 
 {{/*

@@ -65,6 +65,11 @@ customEnv: {}
 jmx:
   port: 5555
 
+## You can list load balanced service endpoint, or list of all brokers (which is hard in K8s).  e.g.:
+## bootstrapServers: "PLAINTEXT://dozing-prawn-kafka-headless:9092"
+kafka:
+  bootstrapServers: ""
+
 ## Prometheus Exporter Configuration
 ## ref: https://prometheus.io/docs/instrumenting/exporters/
 prometheus:
@@ -89,18 +94,7 @@ external:
   externalTrafficPolicy: Cluster
   port: 8082
 
-## If the Kafka Chart is disabled a URL of zookeeper are required to connect
-## e.g. ungaged-sparrow-cp-zookeeper:2181
-cp-zookeeper:
-  url: ""
-
-kafka:
-  bootstrap-server: ""
-
 ## If the Kafka Chart is disabled a URL and port are required to connect
 ## e.g. gnoble-panther-cp-schema-registry:8081
 cp-schema-registry:
   url: ""
-
-cp-kafka:
-  bootstrapServers: ""
