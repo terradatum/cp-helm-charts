@@ -1,6 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: {{ .Values.namespace }}
   name: {{ template "cp-kafka-connect.fullname" . }}
   labels:
     app: {{ template "cp-kafka-connect.name" . }}
@@ -33,17 +34,19 @@ spec:
             - name: kafka-connect
               containerPort: {{ .Values.servicePort}}
               protocol: TCP
-            {{- if .Values.jmx }}
-            - containerPort: {{ .Values.jmx.port }}
-              name: jmx
+            {{- if .Values.jmx.port }}
+            - name: jmx
+              containerPort: {{ .Values.jmx.port }}
             {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
           env:
-            - name: CONNECT_REST_ADVERTISED_HOST_NAME
+            - name: POD_IP
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            - name: CONNECT_REST_ADVERTISED_HOST_NAME
+              value: $(POD_IP)
             - name: CONNECT_BOOTSTRAP_SERVERS
               value: {{ template "cp-kafka-connect.kafka.bootstrapServers" . }}
             - name: CONNECT_GROUP_ID
@@ -71,8 +74,19 @@ spec:
             {{- if .Values.jmx.port }}
             - name: KAFKA_JMX_PORT
               value: "{{ .Values.jmx.port }}"
+            - name: CONNECT_JMX_OPTS
+              value: >-
+                -Xms256m -Xmx6144m
+                -Dcom.sun.management.jmxremote
+                -Dcom.sun.management.jmxremote.authenticate=false
+                -Dcom.sun.management.jmxremote.ssl=false
+                -Dcom.sun.management.jmxremote.local.only=false
+                -Dcom.sun.management.jmxremote.port=<KAFKA_JMX_PORT>
+                -Dcom.sun.management.jmxremote.rmi.port=<KAFKA_JMX_PORT>
+                -Djava.rmi.server.hostname=$(POD_IP)
             {{- end }}
-        {{- if .Values.customEnv.CUSTOM_SCRIPT_PATH }}
+
+          {{- if .Values.customEnv.CUSTOM_SCRIPT_PATH }}
           command:
             - /bin/bash
             - -c

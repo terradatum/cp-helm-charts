@@ -48,9 +48,18 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 {{- end -}}
 
-{{/*
-Kafka Bootstrap Servers
+{{/*Create a default fully qualified kafka headless name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
+{{- define "cp-kafka-rest.cp-kafka-headless.fullname" -}}
+{{- $name := "cp-kafka-headless" -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 {{- define "cp-kafka-rest.kafka.bootstrapServers" -}}
-{{- default printf "%s" (index .Values "cp-kafka" "bootstrapServers") -}}
+{{- if (index .Values "kafka" "bootstrapServers") -}}
+{{- printf "%s" (index .Values "kafka" "bootstrapServers") -}}
+{{- else -}}
+{{- printf "PLAINTEXT://%s:9092" (include "cp-kafka-rest.cp-kafka-headless.fullname" .) -}}
+{{- end -}}
 {{- end -}}

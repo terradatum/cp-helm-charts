@@ -2,16 +2,16 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   namespace: {{ .Values.namespace }}
-  name: {{ template "cp-kafka-connect.fullname" . }}
+  name: {{ template "cp-schema-registry.fullname" . }}
   labels:
-    app: {{ template "cp-kafka-connect.name" . }}
-    chart: {{ template "cp-kafka-connect.chart" . }}
+    app: {{ template "cp-schema-registry.name" . }}
+    chart: {{ template "cp-schema-registry.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
   {{- if .Values.ingressAnnotations }}
   annotations:
     # https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guapie/nginx-configuration/annotations.md
-    external-dns.alpha.kubernetes.io/hostname: "{{ template "cp-kafka-connect.fullname" . }}.dev.terradatum.com."
+    external-dns.alpha.kubernetes.io/hostname: "{{ template "cp-schema-registry.fullname" . }}.dev.terradatum.com."
     external-dns.alpha.kubernetes.io/ttl: "300"
   {{- range $key, $value := .Values.ingressAnnotations }}
     {{ $key }}: {{ $value | quote }}
@@ -20,13 +20,13 @@ metadata:
 spec:
   ingressClassName: "nginx"
   rules:
-    - host: "{{ template "cp-kafka-connect.fullname" . }}.dev.terradatum.com"
+    - host: "{{ template "cp-schema-registry.fullname" . }}.dev.terradatum.com"
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: kafka-connect
+                name: schema-registry
                 port:
                   number: {{ .Values.servicePort }}

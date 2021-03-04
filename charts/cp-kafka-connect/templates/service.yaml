@@ -1,6 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: {{ .Values.namespace }}
   name: {{ template "cp-kafka-connect.fullname" . }}
   labels:
     app: {{ template "cp-kafka-connect.name" . }}
@@ -11,6 +12,10 @@ spec:
   ports:
     - name: kafka-connect
       port: {{ .Values.servicePort }}
+    {{ if .Values.jmx.port }}
+    - name: jmx
+      port: {{ .Values.jmx.port }}
+    {{ end }}
   selector:
     app: {{ template "cp-kafka-connect.name" . }}
     release: {{ .Release.Name }}

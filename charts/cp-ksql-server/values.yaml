@@ -2,6 +2,8 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+namespace: confluent-kafka
+
 replicaCount: 1
 
 ## Image Info
@@ -38,6 +40,9 @@ resources: {}
 ## Custom pod annotations
 podAnnotations: {}
 
+## Custom ingress annotations
+ingressAnnotations: {}
+
 ## Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
 nodeSelector: {}
@@ -54,31 +59,7 @@ affinity: {}
 ## JMX Settings
 ## ref: https://docs.confluent.io/current/ksql/docs/operations.html
 jmx:
-  port: 5555
-
-## Prometheus Exporter Configuration
-## ref: https://prometheus.io/docs/instrumenting/exporters/
-prometheus:
-  ## JMX Exporter Configuration
-  ## ref: https://github.com/prometheus/jmx_exporter
-  jmx:
-    enabled: true
-    image: solsson/kafka-prometheus-jmx-exporter@sha256
-    imageTag: 6f82e2b0464f50da8104acd7363fb9b995001ddff77d248379f8788e78946143
-    imagePullPolicy: IfNotPresent
-    port: 5556
-
-    ## Resources configuration for the JMX exporter container.
-    ## See the `resources` documentation above for details.
-    resources: {}
-
-## External Access
-## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-loadbalancer
-external:
-  enabled: false
-  type: LoadBalancer
-  externalTrafficPolicy: Cluster
-  port: 8088
+  port: 9012
 
 ## Headless mode
 ## ref: https://docs.confluent.io/current/ksql/docs/installation/server-config/index.html

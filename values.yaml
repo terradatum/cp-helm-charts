@@ -47,7 +47,7 @@ cp-kafka-rest:
 ## ------------------------------------------------------
 cp-kafka-connect:
   enabled: true
-  image: confluentinc/cp-kafka-connect
+  image: 076613928512.dkr.ecr.us-west-2.amazonaws.com/kafka/td-kafka-connect
   imageTag: 6.1.0
   ## Optionally specify an array of imagePullSecrets. Secrets must be manually created in the namespace.
   ## https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
@@ -78,3 +78,6 @@ cp-ksql-server:
   heapOptions: "-Xms512M -Xmx512M"
   ksql:
     headless: false
+
+jmx:
+  port: 9012

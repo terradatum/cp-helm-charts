@@ -1,10 +1,7 @@
-{{- if .Capabilities.APIVersions.Has "apps/v1" }}
 apiVersion: apps/v1
-{{- else }}
-apiVersion: apps/v1beta2
-{{- end }}
 kind: Deployment
 metadata:
+  namespace: {{ .Values.namespace }}
   name: {{ template "cp-schema-registry.fullname" . }}
   labels:
     app: {{ template "cp-schema-registry.name" . }}
@@ -22,39 +19,14 @@ spec:
       labels:
         app: {{ template "cp-schema-registry.name" . }}
         release: {{ .Release.Name }}
-      {{- if or .Values.podAnnotations .Values.prometheus.jmx.enabled }}
+      {{- if or .Values.podAnnotations }}
       annotations:
       {{- range $key, $value := .Values.podAnnotations }}
         {{ $key }}: {{ $value | quote }}
       {{- end }}
-      {{- if .Values.prometheus.jmx.enabled }}
-        prometheus.io/scrape: "true"
-        prometheus.io/port: {{ .Values.prometheus.jmx.port | quote }}
-      {{- end }}
       {{- end }}
     spec:
       containers:
-        {{- if .Values.prometheus.jmx.enabled }}
-        - name: prometheus-jmx-exporter
-          image: "{{ .Values.prometheus.jmx.image }}:{{ .Values.prometheus.jmx.imageTag }}"
-          imagePullPolicy: "{{ .Values.prometheus.jmx.imagePullPolicy }}"
-          command:
-          - java
-          - -XX:+UnlockExperimentalVMOptions
-          - -XX:MaxRAMFraction=1
-          - -XshowSettings:vm
-          - -jar
-          - jmx_prometheus_httpserver.jar
-          - {{ .Values.prometheus.jmx.port | quote }}
-          - /etc/jmx-schema-registry/jmx-schema-registry-prometheus.yml
-          ports:
-          - containerPort: {{ .Values.prometheus.jmx.port }}
-          resources:
-{{ toYaml .Values.prometheus.jmx.resources | indent 12 }}
-          volumeMounts:
-          - name: jmx-config
-            mountPath: /etc/jmx-schema-registry
-        {{- end }}
         - name: {{ template "cp-schema-registry.name" . }}-server
           image: "{{ .Values.image }}:{{ .Values.imageTag }}"
           imagePullPolicy: "{{ .Values.imagePullPolicy }}"
@@ -62,19 +34,21 @@ spec:
             - name: schema-registry
               containerPort: {{ .Values.servicePort }}
               protocol: TCP
-            {{- if .Values.prometheus.jmx.enabled }}
-            - containerPort: {{ .Values.jmx.port }}
-              name: jmx
+            {{- if .Values.jmx.port }}
+            - name: jmx
+              containerPort: {{ .Values.jmx.port }}
             {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
           env:
-          - name: SCHEMA_REGISTRY_HOST_NAME
+          - name: POD_IP
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP
+          - name: SCHEMA_REGISTRY_HOST_NAME
+            value: $(POD_IP)
           - name: SCHEMA_REGISTRY_LISTENERS
-            value: http://0.0.0.0:{{ .Values.servicePort }}
+            value: {{ printf "http://0.0.0.0:%s" (.Values.servicePort | toString) }}
           - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
             value: {{ template "cp-schema-registry.kafka.bootstrapServers" . }}
           - name: SCHEMA_REGISTRY_KAFKASTORE_GROUP_ID
@@ -83,7 +57,7 @@ spec:
             value: "true"
           - name: SCHEMA_REGISTRY_HEAP_OPTS
             value: "{{ .Values.heapOptions }}"
-          {{ range $configName, $configValue := .Values.configurationOverrides }}
+          {{- range $configName, $configValue := .Values.configurationOverrides }}
           - name: SCHEMA_REGISTRY_{{ $configName | replace "." "_" | upper }}
             value: {{ $configValue | quote }}
           {{ end }}
@@ -95,19 +69,22 @@ spec:
           - name: SCHEMA_REGISTRY_OPTS
             value: "{{ .Values.schemaRegistryOpts }}"
           {{- end }}
-          {{- if .Values.jmx.port }}
-          - name: JMX_PORT
+          - name: KAFKA_JMX_PORT
             value: "{{ .Values.jmx.port }}"
-          {{- end }}
+          - name: SCHEMA_REGISTRY_JMX_OPTS
+            value: >-
+              -Xms256m -Xmx6144m
+              -Dcom.sun.management.jmxremote
+              -Dcom.sun.management.jmxremote.authenticate=false
+              -Dcom.sun.management.jmxremote.ssl=false
+              -Dcom.sun.management.jmxremote.local.only=false
+              -Dcom.sun.management.jmxremote.port=<KAFKA_JMX_PORT>
+              -Dcom.sun.management.jmxremote.rmi.port=<KAFKA_JMX_PORT>
+              -Djava.rmi.server.hostname=$(POD_IP)
+
       {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
 {{ toYaml .Values.imagePullSecrets | indent 8 }}
-      {{- end }}
-      volumes:
-      {{- if .Values.prometheus.jmx.enabled }}
-      - name: jmx-config
-        configMap:
-          name: {{ template "cp-schema-registry.fullname" . }}-jmx-configmap
       {{- end }}
       {{- if .Values.nodeSelector }}
       nodeSelector:
